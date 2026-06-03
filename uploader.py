@@ -24,17 +24,13 @@ def _get_client(account: dict) -> Client:
     cl = Client()
     cl.delay_range = [1, 3]
 
-    # GitHub Actions: Secret으로 저장된 세션 사용
+    # GitHub Actions: Secret 세션 사용 (재로그인 없음)
     session_b64 = os.getenv(f"IG_ACCOUNT_{account['idx']}_SESSION")
     if session_b64:
-        try:
-            cl.set_settings(json.loads(base64.b64decode(session_b64).decode()))
-            cl.login(account["user"], account["pass"])
-            return cl
-        except Exception as e:
-            print(f"  세션 로드 실패, 재로그인: {e}")
+        cl.set_settings(json.loads(base64.b64decode(session_b64).decode()))
+        return cl
 
-    # 로컬 세션 파일
+    # 로컬: 세션 파일 또는 비밀번호 로그인
     session_path = Path(f"sessions/{account['user']}.json")
     session_path.parent.mkdir(exist_ok=True)
     if session_path.exists():
