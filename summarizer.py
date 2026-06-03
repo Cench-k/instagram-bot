@@ -8,8 +8,50 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-_model = genai.GenerativeModel("gemini-3.5-flash")
+
+# 여러 API 키 지원: GEMINI_API_KEY_1, _2, ... 또는 GEMINI_API_KEY
+_API_KEYS: list[str] = []
+for i in range(1, 20):
+    k = os.getenv(f"GEMINI_API_KEY_{i}")
+    if k:
+        _API_KEYS.append(k)
+if not _API_KEYS and os.getenv("GEMINI_API_KEY"):
+    _API_KEYS.append(os.getenv("GEMINI_API_KEY"))
+
+MODEL_NAME = "gemini-3.5-flash"
+
+
+def _get_model() -> genai.GenerativeModel:
+    """할당량 초과 시 다음 키로 전환."""
+    last_err = None
+    for key in _API_KEYS:
+        try:
+            genai.configure(api_key=key)
+            model = genai.GenerativeModel(MODEL_NAME)
+            model.generate_content("test", generation_config={"max_output_tokens": 1})
+            return model
+        except Exception as e:
+            if "429" in str(e) or "quota" in str(e).lower():
+                last_err = e
+                continue
+            return model
+    raise RuntimeError(f"모든 Gemini API 키 할당량 초과: {last_err}")
+
+
+def _generate(prompt: str) -> str:
+    """할당량 초과 시 다음 키로 재시도."""
+    last_err = None
+    for key in _API_KEYS:
+        try:
+            genai.configure(api_key=key)
+            model = genai.GenerativeModel(MODEL_NAME)
+            return model.generate_content(prompt).text.strip()
+        except Exception as e:
+            if "429" in str(e) or "quota" in str(e).lower():
+                last_err = e
+                continue
+            raise
+    raise RuntimeError(f"모든 Gemini API 키 할당량 초과: {last_err}")
 
 
 def get_keyword(title: str, body: str) -> str:
@@ -17,8 +59,7 @@ def get_keyword(title: str, body: str) -> str:
     prompt = f"""다음 뉴스 기사의 핵심 키워드를 1~3단어로만 답하세요. 설명 없이 단어만.
 제목: {title}
 본문: {body[:500]}"""
-    response = _model.generate_content(prompt)
-    return response.text.strip().splitlines()[0].strip()
+    return _generate(prompt).splitlines()[0].strip()
 
 
 _KO_EXAMPLE_1 = """연상호 감독의 신작 좀비 스릴러 '군체'가 개봉 첫 주말 박스오피스 정상을 차지했습니다. 정체불명의 감염 사태로 외부와 완전히 봉쇄된 건물 안, 고립된 생존자들이 예측할 수 없는 형태로 진화하는 감염자들에 맞서는 이야기입니다. 개봉 첫날부터 단 한 번도 1위를 놓치지 않고 독주 체제를 굳혔어요.
@@ -112,12 +153,9 @@ def generate_caption(title: str, body: str) -> dict[str, str]:
 
 キャプションのみ出力。例文のそのままのコピーは禁止。"""
 
-    ko_res = _model.generate_content(ko_prompt)
-    ja_res = _model.generate_content(ja_prompt)
-
     return {
-        "ko": ko_res.text.strip(),
-        "ja": ja_res.text.strip(),
+        "ko": _generate(ko_prompt),
+        "ja": _generate(ja_prompt),
     }
 
 
