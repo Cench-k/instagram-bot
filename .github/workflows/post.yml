@@ -39,6 +39,8 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           IG_ACCOUNT_1_USER: ${{ secrets.IG_ACCOUNT_1_USER }}
           IG_ACCOUNT_1_PASS: ${{ secrets.IG_ACCOUNT_1_PASS }}
+          IG_ACCOUNT_1_SESSION: ${{ secrets.IG_ACCOUNT_1_SESSION }}
           IG_ACCOUNT_2_USER: ${{ secrets.IG_ACCOUNT_2_USER }}
           IG_ACCOUNT_2_PASS: ${{ secrets.IG_ACCOUNT_2_PASS }}
+          IG_ACCOUNT_2_SESSION: ${{ secrets.IG_ACCOUNT_2_SESSION }}
         run: python pipeline.py
