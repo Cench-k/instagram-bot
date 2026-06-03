@@ -1,6 +1,5 @@
-import base64
-import json
 import os
+import urllib.parse
 from pathlib import Path
 from dotenv import load_dotenv
 from instagrapi import Client
@@ -24,11 +23,10 @@ def _get_client(account: dict) -> Client:
     cl = Client()
     cl.delay_range = [1, 3]
 
-    # GitHub Actions: Secret 세션 사용 (재로그인 없음)
-    session_b64 = os.getenv(f"IG_ACCOUNT_{account['idx']}_SESSION")
-    if session_b64:
-        padded = session_b64 + "=" * (-len(session_b64) % 4)
-        cl.set_settings(json.loads(base64.b64decode(padded).decode()))
+    # GitHub Actions: sessionid 쿠키 직접 사용
+    session_id = os.getenv(f"IG_ACCOUNT_{account['idx']}_SESSION")
+    if session_id:
+        cl.login_by_sessionid(urllib.parse.unquote(session_id))
         return cl
 
     # 로컬: 세션 파일 또는 비밀번호 로그인
