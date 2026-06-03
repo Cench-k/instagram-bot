@@ -27,7 +27,8 @@ def _get_client(account: dict) -> Client:
     # GitHub Actions: Secret 세션 사용 (재로그인 없음)
     session_b64 = os.getenv(f"IG_ACCOUNT_{account['idx']}_SESSION")
     if session_b64:
-        cl.set_settings(json.loads(base64.b64decode(session_b64).decode()))
+        padded = session_b64 + "=" * (-len(session_b64) % 4)
+        cl.set_settings(json.loads(base64.b64decode(padded).decode()))
         return cl
 
     # 로컬: 세션 파일 또는 비밀번호 로그인
