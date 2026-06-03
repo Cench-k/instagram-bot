@@ -1,0 +1,31 @@
+name: 인스타그램 자동 좋아요
+
+on:
+  schedule:
+    - cron: '30 * * * *'  # 매시간 30분
+  workflow_dispatch:
+
+jobs:
+  like:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 설치
+        run: pip install -r requirements.txt
+
+      - name: 좋아요 실행
+        env:
+          IG_ACCOUNT_1_USER: ${{ secrets.IG_ACCOUNT_1_USER }}
+          IG_ACCOUNT_1_PASS: ${{ secrets.IG_ACCOUNT_1_PASS }}
+          IG_ACCOUNT_1_SESSION: ${{ secrets.IG_ACCOUNT_1_SESSION }}
+          IG_ACCOUNT_2_USER: ${{ secrets.IG_ACCOUNT_2_USER }}
+          IG_ACCOUNT_2_PASS: ${{ secrets.IG_ACCOUNT_2_PASS }}
+          IG_ACCOUNT_2_SESSION: ${{ secrets.IG_ACCOUNT_2_SESSION }}
+        run: python liker.py
