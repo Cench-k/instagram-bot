@@ -1,0 +1,20 @@
+[
+  {
+    "scheduled_at": "2026-06-02T10:00:00",
+    "caption": "첫 번째 자동 업로드 게시물입니다! #자동업로드 #test",
+    "images": [
+      "https://your-server.com/photo1.jpg"
+    ],
+    "done": false
+  },
+  {
+    "scheduled_at": "2026-06-03T18:00:00",
+    "caption": "캐러셀 테스트 게시물 #캐러셀",
+    "images": [
+      "https://your-server.com/photo1.jpg",
+      "https://your-server.com/photo2.jpg",
+      "https://your-server.com/photo3.jpg"
+    ],
+    "done": false
+  }
+]

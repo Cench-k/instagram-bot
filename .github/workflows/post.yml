@@ -1,0 +1,44 @@
+name: 인스타그램 자동 업로드
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # 매시간 정각
+  workflow_dispatch:        # 수동 실행 버튼
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 세션 캐시 복원
+        uses: actions/cache@v4
+        with:
+          path: sessions/
+          key: ig-sessions-${{ github.run_id }}
+          restore-keys: |
+            ig-sessions-
+
+      - name: Noto Sans KR 폰트 설치
+        run: |
+          mkdir -p ~/.fonts
+          wget -q "https://github.com/google/fonts/raw/main/ofl/notosanskr/NotoSansKR%5Bwght%5D.ttf" -O ~/.fonts/NotoSansKR-VF.ttf
+          echo "FONT_PATH=$HOME/.fonts/NotoSansKR-VF.ttf" >> $GITHUB_ENV
+
+      - name: 패키지 설치
+        run: pip install -r requirements.txt
+
+      - name: 파이프라인 실행
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          IG_ACCOUNT_1_USER: ${{ secrets.IG_ACCOUNT_1_USER }}
+          IG_ACCOUNT_1_PASS: ${{ secrets.IG_ACCOUNT_1_PASS }}
+          IG_ACCOUNT_2_USER: ${{ secrets.IG_ACCOUNT_2_USER }}
+          IG_ACCOUNT_2_PASS: ${{ secrets.IG_ACCOUNT_2_PASS }}
+        run: python pipeline.py
