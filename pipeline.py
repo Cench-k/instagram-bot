@@ -13,7 +13,7 @@ import tempfile
 from pathlib import Path
 
 from crawler import fetch_article, fetch_article_urls, download_image
-from summarizer import get_keyword, generate_caption
+from summarizer import get_keyword, generate_caption, translate_title_ja
 from card_maker import make_cards
 from uploader import upload_to_all
 
@@ -56,31 +56,42 @@ def run(article_url: str | None = None, upload: bool = True):
         print("이미지 다운로드 실패.")
         sys.exit(1)
 
-    # 4. Gemini로 키워드 + 캡션 생성
+    # 4. Gemini로 키워드 + 캡션 + 일본어 제목 생성
     print("Gemini API로 처리 중...")
     try:
         keyword = get_keyword(article.title, article.body)
         captions = generate_caption(article.title, article.body)
+        ja_title = translate_title_ja(article.title)
         print(f"키워드: {keyword}")
+        print(f"일본어 제목: {ja_title}")
         print(f"\n--- 캡션 (한국어) ---\n{captions['ko']}\n")
         print(f"--- 캡션 (일본어) ---\n{captions['ja']}\n-------------------")
     except Exception as e:
         print(f"Gemini 처리 실패: {e}")
         keyword = article.title.split()[0]
+        ja_title = article.title
         captions = {"ko": article.title, "ja": article.title}
 
-    # 5. 카드뉴스 이미지 생성
+    # 5. 카드뉴스 이미지 생성 (한국어 + 일본어)
     slug = url.split("/")[-1][:20]
     card_dir = OUTPUT_DIR / slug
     print(f"\n카드뉴스 생성 중 → {card_dir}")
-    card_paths = make_cards(
+    ko_paths = make_cards(
         image_path=tmp_img,
         keyword=keyword,
         headline=article.title,
         output_dir=str(card_dir),
+        filename="card_ko.png",
+    )
+    ja_paths = make_cards(
+        image_path=tmp_img,
+        keyword=keyword,
+        headline=ja_title,
+        output_dir=str(card_dir),
+        filename="card_ja.png",
     )
     os.unlink(tmp_img)
-    print(f"카드뉴스 {len(card_paths)}장 생성 완료.")
+    print(f"카드뉴스 2장 생성 완료.")
 
     # 6. 인스타그램 업로드
     if not upload:
@@ -89,7 +100,7 @@ def run(article_url: str | None = None, upload: bool = True):
         return
 
     print("\n인스타그램 업로드 중...")
-    upload_to_all(card_paths, captions)
+    upload_to_all({"ko": ko_paths, "ja": ja_paths}, captions)
 
 
 if __name__ == "__main__":

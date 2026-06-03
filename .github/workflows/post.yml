@@ -2,7 +2,7 @@ name: 인스타그램 자동 업로드
 
 on:
   schedule:
-    - cron: '0 * * * *'   # 매시간 정각
+    - cron: '0 */3 * * *'  # 3시간마다
   workflow_dispatch:        # 수동 실행 버튼
 
 jobs:

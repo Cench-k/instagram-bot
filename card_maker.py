@@ -188,11 +188,12 @@ def make_cards(
     keyword: str,
     headline: str,
     output_dir: str,
+    filename: str = "card.png",
 ) -> list[str]:
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    card_path = str(out / "card.png")
+    card_path = str(out / filename)
     make_card(image_path, keyword, headline, card_path)
     print(f"  [카드] {card_path}")
     return [card_path]

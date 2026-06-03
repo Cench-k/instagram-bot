@@ -48,20 +48,22 @@ def _get_client(account: dict) -> Client:
     return cl
 
 
-def upload_to_all(card_paths: list[str], captions: dict[str, str]):
+def upload_to_all(cards: dict[str, list[str]], captions: dict[str, str]):
     """
     모든 계정에 업로드.
     계정1 = 일본어, 계정2 = 한국어
-    card_paths: 로컬 이미지 경로 리스트
+    cards: {"ko": [경로], "ja": [경로]}
     captions: {"ko": "한국어 캡션", "ja": "일본어 캡션"}
     """
     if not ACCOUNTS:
         raise RuntimeError(".env에 IG_ACCOUNT_1_USER / IG_ACCOUNT_1_PASS 설정이 없습니다.")
 
-    caption_list = [captions.get("ja", ""), captions.get("ko", "")]  # 계정1=ja, 계정2=ko
+    lang_order = ["ja", "ko"]  # 계정1=ja, 계정2=ko
 
     for i, account in enumerate(ACCOUNTS):
-        caption = caption_list[i] if i < len(caption_list) else caption_list[-1]
+        lang = lang_order[i] if i < len(lang_order) else lang_order[-1]
+        card_paths = cards.get(lang, cards.get("ko", []))
+        caption = captions.get(lang, "")
         print(f"\n[{account['name']}] 업로드 시작...")
         try:
             cl = _get_client(account)
