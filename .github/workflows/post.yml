@@ -36,7 +36,10 @@ jobs:
 
       - name: 파이프라인 실행
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_1: ${{ secrets.GEMINI_API_KEY_1 }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+          GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
+          GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
           IG_ACCOUNT_1_USER: ${{ secrets.IG_ACCOUNT_1_USER }}
           IG_ACCOUNT_1_PASS: ${{ secrets.IG_ACCOUNT_1_PASS }}
           IG_ACCOUNT_1_SESSION: ${{ secrets.IG_ACCOUNT_1_SESSION }}
